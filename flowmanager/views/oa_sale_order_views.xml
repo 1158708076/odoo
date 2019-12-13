@@ -1,0 +1,22 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="oa_view_order_form">
+            <field name="name">销售订单</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"></field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='currency_id']" position="after">
+                    <field name="resourceflow" invisible="1"/>
+                    <field name="oa_state" invisible="1"/>
+                </xpath>
+                <xpath expr="//button[@name='action_unlock']" position="after">
+                    <button name="action_submit" string="提交审批" type="object" class="btn-primary"
+                            attrs="{'invisible': ['|',('oa_state', 'not in', ['nosubmit','',False])]}"/>
+                    <button name="action_approve" string="批准" type="object" class="btn-primary"
+                            attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+                    <!--<button name="action_correct" string="单据矫正" type="object" class="btn-primary"/>-->
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

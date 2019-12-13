@@ -1,0 +1,64 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="oa_ordertype_list">
+            <field name="name">单据类型列表</field>
+            <field name="model">oa.ordertype</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="model_name"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="oa_ordertype_form">
+            <field name="name">单据类型表单</field>
+            <field name="model">oa.ordertype</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_create_menu" string="生成菜单" type="object" class="oe_highlight"/>
+                        <button name="action_start_others_mode" string="开启基础表单审批模式" type="object" class="oe_highlight"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="model_name"/>
+                                <field name="model_view"/>
+                                <field name="ir_sequence_id" invisible="1"/>
+                                <field name="isother_mode"/>
+                            </group>
+                            <group>
+                                <field name="code"/>
+                                <field name="sequence_prefix"/>
+                                <field name="padding"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="oa_ordertype_filter" model="ir.ui.view">
+            <field name="name">单据类型筛选</field>
+            <field name="model">oa.ordertype</field>
+            <field name="arch" type="xml">
+                <search string="Search flow">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="model_name"/>
+                </search>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_window_oa_ordertype">
+            <field name="name">单据类型</field>
+            <field name="res_model">oa.ordertype</field>
+            <field name="view_mode">form,tree</field>
+            <field name="search_view_id" ref="oa_ordertype_filter"></field>
+            <field name="view_id" ref="oa_ordertype_list"></field>
+        </record>
+        <menuitem name="单据类型" id="menu_oa_ordertype" parent="menu_setting" sequence="0"
+                  action="action_window_oa_ordertype"/>
+    </data>
+</odoo>

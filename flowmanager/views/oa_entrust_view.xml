@@ -1,0 +1,89 @@
+<odoo>
+    <data>
+        <record id="oa_entrust_tree" model="ir.ui.view">
+            <field name="name">oa_entrust_tree</field>
+            <field name="model">oa.entrust</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="oa_entrust_tree">
+                    <field name="et_name"/>
+                    <field name="et_from"/>
+                    <field name="et_to"/>
+                    <field name="et_start"/>
+                    <field name="et_end"/>
+                    <field name="et_how"/>
+                    <field name="et_type" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="oa_entrust_filter" model="ir.ui.view">
+            <field name="name">oa_entrust_filter</field>
+            <field name="model">oa.entrust</field>
+            <field name="arch" type="xml">
+                <search string="Search Payslips">
+                    <field name="et_name"/>
+                    <field name="et_from"/>
+                    <field name="et_to"/>
+                    <field name="et_start"/>
+                    <field name="et_end"/>
+                    <field name="et_how"/>
+                    <field name="et_type"/>
+                    <filter string="我的委托" name="my_entrust"
+                            domain="[('et_from.user_id.id','parent_of', uid)]"/>
+                    <filter string="委托类型分组" name="type_group" domain="[]" context="{'group_by' : 'et_type'}"/>
+                    <filter string="委托人分组" name="et_from_group" domain="[]" context="{'group_by' : 'et_from'}"/>
+                    <filter string="被委托人分组" name="et_to_group" domain="[]" context="{'group_by' : 'et_to'}"/>
+                </search>
+            </field>
+        </record>
+
+
+        <record id="oa_entrust_form" model="ir.ui.view">
+            <field name="name">oa_entrust_form</field>
+            <field name="model">oa.entrust</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="oa_entrust_form">
+                    <sheet>
+                        <h1>
+                            <field name="et_name"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="et_from" readonly="1"/>
+                                <field name="et_start"/>
+                                <field name="et_how"/>
+                            </group>
+                            <group>
+                                <field name="et_to"/>
+                                <field name="et_end"/>
+                                <field name="et_type"
+                                       attrs="{'required':[('et_how','!=','1')]}"
+                                       widget="many2many_tags"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="act_oa_entrust" model="ir.actions.act_window">
+            <field name="name">流程委托</field>
+            <field name="res_model">oa.entrust</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="oa_entrust_tree"/>
+            <field name="search_view_id" ref="oa_entrust_filter"/>
+        </record>
+
+        <menuitem id="menu_oa_entrust" name="流程委托" sequence="5" action="act_oa_entrust"
+                  parent="menu_setting"/>
+
+    </data>
+</odoo>

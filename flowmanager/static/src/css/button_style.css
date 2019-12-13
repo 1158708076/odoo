@@ -1,0 +1,58 @@
+.btn-my {
+  color: #fff;
+  background-color: #875A9B;
+  border-color: #875A9B;
+}
+.btn-my:focus,
+.btn-my.focus {
+  color: #fff;
+  background-color: #875A6B;
+  border-color: #875A6B;
+}
+.btn-my:hover {
+  color: #fff;
+  background-color: #875A6B;
+  border-color: #875A6B;
+}
+
+.btn-my:active,
+.btn-my.active,
+.open > .dropdown-toggle.btn-my {
+  color: #fff;
+  background-color: #875A9B;
+  border-color: #875A6B;
+}
+.btn-my:active:hover,
+.btn-my.active:hover,
+.open > .dropdown-toggle.btn-my:hover,
+.btn-my:active:focus,
+.btn-my.active:focus,
+.open > .dropdown-toggle.btn-my:focus,
+.btn-my:active.focus,
+.btn-my.active.focus,
+.open > .dropdown-toggle.btn-my.focus {
+  color: #fff;
+  background-color: #875A6B;
+  border-color: #875A6B;
+}
+.btn-my:active,
+.btn-my.active,
+.open > .dropdown-toggle.btn-my {
+  background-image: none;
+}
+.btn-my.disabled:hover,
+.btn-my[disabled]:hover,
+fieldset[disabled] .btn-my:hover,
+.btn-my.disabled:focus,
+.btn-my[disabled]:focus,
+fieldset[disabled] .btn-my:focus,
+.btn-my.disabled.focus,
+.btn-my[disabled].focus,
+fieldset[disabled] .btn-my.focus {
+  background-color: #875A9B;
+  border-color: #875A9B;
+}
+.btn-my .badge {
+  color: #875A9B;
+  background-color: #fff;
+}

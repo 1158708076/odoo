@@ -1,0 +1,366 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="oa_step_form">
+            <field name="name">填写驳回原因</field>
+            <field name="model">oa.flow.step</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <field name="step_lvid" invisible="1"/>
+                        <field name="step_name" invisible="1"/>
+                        <field name="operator" invisible="1"/>
+                        <field name="operatingresult" invisible="1"/>
+                        <field name="operatingtime" invisible="1"/>
+                        <field name="operatingdesc" widget="html"/>
+                    </sheet>
+                    <footer>
+                        <group>
+                            <span>
+                                <button string="驳回" type="object" class="oe_highlight" name="action_reject"/>
+                                <button string="驳回至申请人" type="object" class="oe_highlight" name="action_reject_all"/>
+                                <button string="再看看" class="oe_link" special="cancel"/>
+                            </span>
+                        </group>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_oa_step">
+            <field name="name">填写驳回原因</field>
+            <field name="res_model">oa.flow.step</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <!--<record id="action_othermode_commit" model="ir.actions.server">-->
+        <!--<field name="name">提交审批</field>-->
+        <!--<field name="type">ir.actions.server</field>-->
+        <!--<field name="model_id" ref="model_oa"/>-->
+        <!--<field name="binding_model_id" ref="hr_holidays.model_hr_holidays"/>-->
+        <!--<field name="state">code</field>-->
+        <!--<field name="attrs">model.otherorder_commit()</field>-->
+        <!--</record>-->
+
+        <!--<record id="action_othermode_approve" model="ir.actions.server">-->
+        <!--<field name="name">批准</field>-->
+        <!--<field name="type">ir.actions.server</field>-->
+        <!--<field name="model_id" ref="model_oa"/>-->
+        <!--<field name="binding_model_id" ref="model_oa"/>-->
+        <!--<field name="state">code</field>-->
+        <!--<field name="code"></field>-->
+        <!--</record>-->
+
+        <!--<record id="action_othermode_reject" model="ir.actions.server">-->
+        <!--<field name="name">驳回</field>-->
+        <!--<field name="type">ir.actions.server</field>-->
+        <!--<field name="model_id" ref="model_oa"/>-->
+        <!--<field name="binding_model_id" ref="model_oa"/>-->
+        <!--<field name="state">code</field>-->
+        <!--<field name="code"></field>-->
+        <!--</record>-->
+
+        <!--<record id="action_othermode_over" model="ir.actions.server">-->
+        <!--<field name="name">审批终止</field>-->
+        <!--<field name="type">ir.actions.server</field>-->
+        <!--<field name="model_id" ref="model_oa"/>-->
+        <!--<field name="binding_model_id" ref="model_oa"/>-->
+        <!--<field name="state">code</field>-->
+        <!--<field name="code"></field>-->
+        <!--</record>-->
+
+        <record model="ir.ui.view" id="oa_kanban">
+            <field name="name">流程看板</field>
+            <field name="model">oa</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_mobile">
+                    <field name="oa_name"/>
+                    <field name="oa_applicant"/>
+                    <field name="oa_approver" widget="many2many_tags"/>
+                    <field name="oa_createdate"/>
+                    <field name="oa_comment"/>
+                    <field name="oa_state"/>
+                    <field name="oa_ordertype"/>
+                    <!--<button name="action_commit" string="提交" type="object" class="oe_highlight"-->
+                    <!--attrs="{'invisible': [('oa_state', 'not in', ['nosubmit'])]}"/>-->
+                    <!--<button name="action_approve_pass" string="审批通过" type="object" class="oe_highlight"-->
+                    <!--attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving','goback'])]}"/>-->
+                    <!--<button name="action_approve_rejected" string="审批驳回" type="object" class="oe_highlight"-->
+                    <!--attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving'])]}"/>-->
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                                <div class="row">
+                                    <div class="col-xs-12 text-muted">
+                                        <span>编号：
+                                            <t t-esc="record.oa_name.value"/>
+                                            <field name="oa_state" widget="label_selection"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12 text-muted">
+                                        <span>单据类型：
+                                            <t t-esc="record.oa_ordertype.value"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12 text-muted">
+                                        <span>备注：
+                                            <t t-esc="record.oa_comment.value"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-12 text-muted">
+                                        <span>申请人：
+                                            <t t-esc="record.oa_applicant.value"/>
+                                        </span>
+                                    </div>
+                                </div>
+                                <br/>
+                                <div class="row">
+                                    <div class="col-xs-12 text-muted">
+                                        <strong>
+                                            <span class="pull-right text-right">
+                                                <t t-esc="record.oa_createdate.value"/>
+                                            </span>
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_bottom">
+                                    <div class="oe_kanban_bottom_left text-muted"></div>
+                                    <div class="oe_kanban_bottom_right">
+                                        <field name="oa_approver" widget="many2many_tags"/>
+                                        <!--<button name="action_commit" string="提交" type="object" class="oe_highlight"-->
+                                        <!--attrs="{'invisible': [('oa_state', 'not in', ['nosubmit'])]}"/>-->
+                                        <!--<button name="action_approve_pass" string="审批通过" type="object"-->
+                                        <!--class="oe_highlight"-->
+                                        <!--attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving','goback'])]}"/>-->
+                                        <!--<button name="action_approve_rejected" string="审批驳回" type="object"-->
+                                        <!--class="oe_highlight"-->
+                                        <!--attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving'])]}"/>-->
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="oa_form">
+            <field name="name">base流程表单</field>
+            <field name="model">oa</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="action_commit" string="提交" type="object" class="oe_highlight"
+                                attrs="{'invisible': ['|',('oa_state', 'not in', ['nosubmit'])]}"/>
+
+                        <button name="action_approval" string="批准" type="object" class="oe_highlight"
+                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+
+                        <button name="%(action_oa_step)d" string="驳回" type="action"
+                                class="oe_highlight"
+                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback'])]}"/>
+
+                        <!--attrs="{'invisible': [('applicant_id', '=', uid)]}"-->
+
+                        <button name="action_approve_termination" string="审批终止" type="object" class="oe_highlight"
+                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+                        <button name="action_attachment" string="附件上传" type="object" class="oe_highlight"
+                                groups="oa_jingyuan.group_oa_jingyuan_rs" attrs="{'invisible':True}"/>
+                        <field name="oa_state" widget="statusbar" statusbar_visible="nosubmit,noapprove,approving,ok"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(action_window_oa_flow_context)d" type="action" class="oe_stat_button"
+                                    string="流程"
+                                    icon="fa-flag">
+                            </button>
+                        </div>
+                        <!--<button name="action_get_attachment_view" class="oe_stat_button" icon="fa-book" type="object"-->
+                        <!--attrs="{'invisible': ['|',('ordertype', 'not in', ['1','2']),('isattachment','!=','1')],'required':['|',('ordertype', 'not in', ['1','2']),('ordertype', '=', True)]}">-->
+                        <!--<field name="attachment_number" widget="statinfo" string="附件上传"/>-->
+                        <!--</button>-->
+                        <h1>
+                            <field name="oa_name" readonly="1"/>
+                        </h1>
+                        <group>
+                            <group name="oa_info">
+                                <field name="oa_flowway" string="流程名称"
+                                       attrs="{'invisible':True}"/>
+                                <field name="oa_createdate" string="创建时间" attrs="{'readonly':True}"/>
+                                <field name="oa_applicant" string="申请人"/>
+                                <field name="oa_approver" attrs="{'invisible':True}"/>
+                                <field name="oa_nextapprover" attrs="{'invisible':True}"/>
+                                <field name="oa_ordertype" string="订单类型" invisible="1"/>
+                            </group>
+                            <group name="oa_otherinfo">
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="审批记录" name="flowwaysteps" invisible="1">
+                                <field name="oa_flowwaysteps" mode="tree,kanban">
+                                    <form string="审批记录">
+                                        <group>
+                                            <group>
+                                                <field name="step_name"/>
+                                            </group>
+                                            <group>
+                                                <field name="operator"/>
+                                                <field name="operatingresult"/>
+                                                <field name="operatingtime"/>
+                                                <field name="operatingdesc"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                    <tree string="审批记录" editable="bottom">
+                                        <field name="step_name"/>
+                                        <field name="operator"/>
+                                        <field name="operatingresult"/>
+                                        <field name="operatingtime"/>
+                                        <field name="operatingdesc"/>
+                                    </tree>
+                                </field>
+                                <!--<field name="oa_comment" string="处理意见"/>-->
+                            </page>
+                            <page string="流程行" name="flowwaylines" invisible="1">
+                                <field name="oa_flowwaylines" mode="tree,kanban">
+                                    <form string="流程步骤">
+                                        <group>
+                                            <group>
+                                                <field name="approvalnumber" string="审批步骤"/>
+                                            </group>
+                                            <group>
+                                                <field name="positer_desc" string="审批步骤名称"/>
+                                                <field name="department_id" string="审批部门"/>
+                                                <field name="positer_id" string="审批岗位"/>
+                                                <field name="isteamapproval" string="是否团队审批"/>
+                                                <field name="candidate_ids" string="候选人" widget="many2many_tags"/>
+                                                <!--<field name="positer_state" string="状态"/>-->
+                                            </group>
+                                        </group>
+                                    </form>
+                                    <tree string="流程步骤">
+                                        <field name="approvalnumber" string="审批步骤"/>
+                                        <field name="positer_desc" string="审批步骤名称"/>
+                                        <field name="department_id" string="审批部门"/>
+                                        <field name="positer_id" string="审批岗位"/>
+                                        <field name="isteamapproval" string="是否团队审批"/>
+                                        <field name="candidate_ids" string="候选人" widget="many2many_tags"/>
+                                        <!--<field name="positer_state" string="状态"/>-->
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!--<footer>-->
+                    <!--<button name="button_haha" string="打印" type="object" class="btn-primary"/>-->
+                    <!--</footer>-->
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="activity_ids" widget="mail_activity"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="oa_filter" model="ir.ui.view">
+            <field name="name">流程单筛选</field>
+            <field name="model">oa</field>
+            <field name="arch" type="xml">
+                <search string="Search flow">
+                    <field name="oa_name"/>
+                    <field name="oa_applicant"/>
+                    <field name="oa_approver"/>
+                    <field name="oa_nextapprover"/>
+                    <field name="oa_state"/>
+                    <filter string="单据状态分组" name="state_group" domain="[]" context="{'group_by':'oa_state'}"/>
+                    <filter string="我的请求" name="my_request" domain="[('user_id', '=', uid)]"/>
+                    <filter string="我的待办" name="my_approvering"
+                            domain="[('oa_approver.user_id.id','parent_of', uid),('oa_state','!=','ok')]"/>
+                    <filter string="我的已办" name="my_approvered"
+                            domain="[('oa_flowwaylines.positer_state','!=',False),('oa_flowwaylines.candidate_ids.user_id.id', 'parent_of', uid)]"/>
+                </search>
+            </field>
+        </record>
+
+
+        <!--为在线聊天添加oa审批按钮-->
+        <!--<record id="mail_activity_view_form_newpopup" model="ir.ui.view">-->
+        <!--<field name="name">mail.activity.view.form.popup</field>-->
+        <!--<field name="model">mail.activity</field>-->
+        <!--<field name="priority">20</field>-->
+        <!--<field name="inherit_id" ref="mail.mail_activity_view_form_popup"></field>-->
+        <!--<field name="arch" type="xml">-->
+        <!--<xpath expr="//button[@name='action_done']" position="replace">-->
+        <!--<button name="action_apporval" string="批准" type="object" class="oe_highlight"/>-->
+        <!--<button name="action_refuse" string="拒绝" type="object" class="oe_highlight"/>-->
+        <!--<button name="action_refuse_to_approve" string="驳回至申请人" type="object" class="oe_highlight"/>-->
+        <!--</xpath>-->
+        <!--</field>-->
+        <!--</record>-->
+
+        <!-- 批量代批 -->
+        <act_window id="action_oa_batch_substitution"
+                    name="批量代批"
+                    src_model="oa"
+                    res_model="oa.batch.substitution"
+                    view_type="tree" view_mode="form"
+                    target="new"/>
+
+        <record model="ir.actions.act_window" id="action_oa_batch_substitution">
+            <field name="name">批量代批</field>
+            <field name="src_model">oa</field>
+            <field name="res_model">oa.batch.substitution</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <record id="oa_batch_substitution_form" model="ir.ui.view">
+            <field name='name'>批量代批表单</field>
+            <field name='model'>oa.batch.substitution</field>
+            <field name='arch' type='xml'>
+                <form string='批量代批'>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="substitution_user"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name='batch_substitution' string='确定' class='oe_highlight' type='object'/>
+                        <button special="cancel" string="取消" type="object" class="btn btn-default oe_inline"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <!-- Top menu item -->
+        <menuitem id="menu_root"
+                  name="OA管理"
+                  web_icon="flowmanager,static/description/oa.png"
+                  active="True"
+                  sequence="26" groups="flowmanager.group_flowmanager_user"/>
+        <!-- menu categories -->
+        <menuitem name="流程单" id="menu_oa" parent="menu_root" sequence="1"/>
+        <menuitem name="配置" id="menu_setting" parent="menu_root"
+                  groups="flowmanager.group_flowmanager_manager" sequence="2"/>
+        <menuitem name="表单" id="menu_oa_receipt" parent="menu_root"/>
+        <menuitem name="报告" id="menu_oa_report" parent="menu_root"/>
+        <menuitem name="员工信息" id="menu_setting_employee_info" parent="menu_setting"
+                  action="hr.open_view_employee_list_my" sequence="2"/>
+        <menuitem name="部门信息" id="menu_setting_department_info" parent="menu_setting"
+                  action="hr.open_module_tree_department" sequence="3"/>
+        <menuitem name="岗位信息" id="menu_setting_job_info" parent="menu_setting"
+                  action="hr.action_hr_job" sequence="4"/>
+        <!--<menuitem name="参照序列" id="menu_setting_sequence" parent="menu_setting" action="base.ir_sequence_form"-->
+        <!--sequence="5"/>-->
+    </data>
+</odoo>

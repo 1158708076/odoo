@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!--流程内容-->
+        <record model="ir.ui.view" id="oa_flow_content_list">
+            <field name="name">流程内容列表</field>
+            <field name="model">oa.flow.line.content</field>
+            <field name="arch" type="xml">
+                <tree string="流程步骤">
+                    <field name="approvalnumber" string="审批步骤"/>
+                    <field name="positer_desc" string="审批步骤名称"/>
+                    <field name="department_id" string="审批部门"/>
+                    <field name="positer_id" string="审批岗位"/>
+                    <field name="isteamapproval" string="是否团队审批"/>
+                    <field name="candidate_ids" string="候选人" widget="many2many_tags"/>
+                    <!--<field name="positer_state" string="状态"/>-->
+                </tree>
+            </field>
+        </record>
+        <!--流程内容-->
+        <record model="ir.ui.view" id="oa_flow_content_form">
+            <field name="name">流程内容表单</field>
+            <field name="model">oa.flow.line.content</field>
+            <field name="arch" type="xml">
+                <form string="流程步骤">
+                    <group>
+                        <group>
+                            <field name="approvalnumber" string="审批步骤"/>
+                        </group>
+                        <group>
+                            <field name="positer_desc" string="审批步骤名称"/>
+                            <field name="department_id" string="审批部门"/>
+                            <field name="positer_id" string="审批岗位"/>
+                            <field name="isteamapproval" string="是否团队审批"/>
+                            <field name="candidate_ids" string="候选人" widget="many2many_tags"/>
+                            <!--<field name="positer_state" string="状态"/>-->
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_window_oa_flow_context">
+            <field name="name">流程</field>
+            <field name="res_model">oa.flow.line.content</field>
+            <field name="view_mode">form,tree</field>
+            <field name="view_id" ref="oa_flow_content_list"></field>
+            <field name="domain">[('line_lvcid', '=', active_id)]</field>
+            <field name="context">{'search_default_line_lvcid': active_id, 'default_line_lvcid': active_id}</field>
+        </record>
+    </data>
+</odoo>
+

@@ -1,0 +1,166 @@
+<odoo>
+    <data>
+        <!--流程列表-->
+        <record model="ir.ui.view" id="oa_flow_list">
+            <field name="name">流程定义列表</field>
+            <field name="model">oa.flow</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="oaflow_name" string="流程名称"/>
+                    <field name="oaflow_flowtype" string="申请单类型"/>
+                    <field name="oaflow_createperson" string="创建人名称"/>
+                </tree>
+            </field>
+        </record>
+        <!--创建流程表单-->
+        <record model="ir.ui.view" id="oa_flow_form">
+            <field name="name">流程表单</field>
+            <field name="model">oa.flow</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="oaflow_name" string="流程名称" attrs="{'readonly':True}"/>
+                                <field name="oaflow_flowtype" string="申请单类型"/>
+                                <field name="oaflow_passapprove"/>
+                            </group>
+                            <group>
+                                <field name="oaflow_createperson" string="创建人名称"/>
+                                <field name="model_name" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="流程行">
+                                <field name="oaflow_lines" mode="tree,kanban"
+                                       context="{'default_model_name':model_name}">
+                                    <form string="流程步骤">
+                                        <group>
+                                            <group>
+                                                <field name="model_name" invisible="1"/>
+                                                <field name="approvalnumber" string="审批步骤"/>
+                                                <field name="condivalue" widget="domain"
+                                                       options="{'model': 'model_name', 'in_dialog': True}"/>
+                                            </group>
+                                            <group>
+                                                <field name="positer_desc" string="审批步骤名称"/>
+                                                <field name="department_id" string="部门审批"/>
+                                                <field name="positer_id" string="岗位审批"/>
+                                                <field name="isteamapproval" string="是否团队审批"/>
+                                                <field name="candidate_ids" string="人员审批" widget="many2many_tags"/>
+                                            </group>
+                                        </group>
+                                    </form>
+                                    <tree string="流程步骤">
+                                        <field name="approvalnumber" string="审批步骤"/>
+                                        <field name="condivalue"/>
+                                        <field name="positer_desc" string="审批步骤名称"/>
+                                        <field name="department_id" string="审批部门"/>
+                                        <field name="positer_id" string="审批岗位"/>
+                                        <field name="isteamapproval" string="是否团队审批"/>
+                                        <field name="candidate_ids" string="人员审批" widget="many2many_tags"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        <!--流程看板-->
+        <!--default_group_by设置字段使用默认的列分组。-->
+        <!--default_order设置一个默认的看板排序项。-->
+        <!--quick_create =“false”禁用快速创建选项（大加号），在每一列的顶部可以通过只提供标题描述创建新项目。FALSE值是JavaScript文字，必须小写。-->
+        <!--<record model="ir.ui.view" id="oa_flow_kanban">-->
+        <!--<field name="name">流程看板</field>-->
+        <!--<field name="model">oa.flow</field>-->
+        <!--<field name="arch" type="xml">-->
+        <!--<kanban default_group_by="name" class="o_kanban_small_column" quick_create="false">-->
+        <!--<field name="oaflow_name" string="流程名称"/>-->
+        <!--<field name="oaflow_flowtype" string="申请单类型"/>-->
+        <!--<field name="oaflow_id" string="流程ID" invisible="1"/>-->
+        <!--<field name="oaflow_createperson" string="创建人名称"/>-->
+        <!--<templates>-->
+        <!--<t t-name="kanban-box">-->
+        <!--<div t-attf-class="oe_kanban_card oe_kanban_global_click">-->
+        <!--<div class="row">-->
+        <!--<div class="col-xs-12 text-muted">-->
+        <!--<span>类型：-->
+        <!--<t t-esc="record.oaflow_flowtype.value"/>-->
+        <!--</span>-->
+        <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row">-->
+        <!--<div class="col-xs-12 text-muted">oaflow_-->
+        <!--<span>判断条件：-->
+        <!--<t t-esc="record.oaflow_condition.value"/>-->
+        <!--</span>-->
+        <!--</div>-->
+        <!--</div>-->
+        <!--<div class="row">-->
+        <!--<div class="col-xs-12 text-muted">-->
+        <!--<strong>-->
+        <!--<span class="pull-right text-right">-->
+        <!--<t t-esc="record.oaflow_createperson.value"/>-->
+        <!--</span>-->
+        <!--</strong>-->
+        <!--</div>-->
+        <!--</div>-->
+        <!--</div>-->
+        <!--</t>-->
+        <!--</templates>-->
+        <!--</kanban>-->
+        <!--</field>-->
+        <!--</record>-->
+
+        <!--<record id="view_oa_diagram" model="ir.ui.view">-->
+            <!--<field name="name">流程图</field>-->
+            <!--<field name="model">oa.flow</field>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<diagram string="Workflow Editor">-->
+                    <!--<node object="oa.flow"-->
+                          <!--bgcolor="gray"-->
+                          <!--bg_color_field="gery"-->
+                          <!--fg_color_field="gray">-->
+                        <!--<field name="oaflow_name"/>-->
+                    <!--</node>-->
+                    <!--<arrow object="oa.flow.line"-->
+                           <!--source="node_from"-->
+                           <!--destination="node_to"-->
+                           <!--label="['positer_desc']">-->
+                        <!--<field name="node_from"/>-->
+                        <!--<field name="node_to"/>-->
+                        <!--<field name="positer_desc"/>-->
+                    <!--</arrow>-->
+                <!--</diagram>-->
+            <!--</field>-->
+        <!--</record>-->
+
+        <!--流程筛选-->
+        <record id="oa_flow_filter" model="ir.ui.view">
+            <field name="name">流程筛选</field>
+            <field name="model">oa.flow</field>
+            <field name="arch" type="xml">
+                <search string="Search flow">
+                    <field name="oaflow_name"/>
+                    <field name="oaflow_flowtype"/>
+                    <field name="oaflow_createperson"/>
+                    <filter string="oa单类型分组" name="group_by_type" domain="[]" context="{'group_by':'oaflow_flowtype'}"/>
+                </search>
+            </field>
+        </record>
+
+        <!-- 流程添加window -->
+        <record model="ir.actions.act_window" id="action_window_oa_flow">
+            <field name="name">流程定义</field>
+            <field name="res_model">oa.flow</field>
+            <field name="view_mode">form,tree</field>
+            <field name="view_id" ref="oa_flow_list"></field>
+            <field name="search_view_id" ref="oa_flow_filter"></field>
+            <field name="context">{'search_default_group_by_type':1}</field>
+        </record>
+
+        <menuitem name="流程定义" id="menu_flow_define" parent="menu_setting" sequence="1"
+                  action="action_window_oa_flow"/>
+    </data>
+</odoo>
