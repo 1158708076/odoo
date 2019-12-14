@@ -4,7 +4,6 @@ import logging
 
 import requests
 
-from addons.mail.models.mail_activity import MailActivity
 from odoo import models, fields, api
 from odoo.osv import osv
 
@@ -601,14 +600,17 @@ class oa(models.Model):
                 res_model_id = self.env['ir.model'].search([('model', '=', self.oa_ordertype.model_name.model)])
                 current_recipt_id = self.env[self.oa_ordertype.model_name.model].search(
                     [('x_oa_resourceflow', '=', self.id)]).id
-                self.env['mail.activity'].create({
-                    'res_model_id': res_model_id.id,
-                    'res_id': current_recipt_id,
-                    'user_id': approver.user_id.id,
-                    'activity_type_id': self.env['mail.activity.type'].search([('name', '=', '审批')]).id,
-                    'summary': '审批',
-                    'date_deadline': datetime.datetime.now(),
-                })
+                if current_recipt_id:
+                    self.env['mail.activity'].create({
+                        'res_model_id': res_model_id.id,
+                        'res_id': current_recipt_id,
+                        'user_id': approver.user_id.id,
+                        'activity_type_id': self.env['mail.activity.type'].search([('name', '=', '审批')]).id,
+                        'summary': '审批',
+                        'date_deadline': datetime.datetime.now(),
+                    })
+                else:
+                    raise  osv.except_osv('如果开启了基础表单审批模式，请在基础表单动作按钮处点击【提交审批】')
             else:
                 mail_invite = self.env['mail.wizard.invite'].with_context({
                     'default_res_model': self.oa_ordertype.model_name.model,

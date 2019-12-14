@@ -1,4 +1,5 @@
-from myaddons.utils import util
+from datetime import datetime
+
 from odoo import models, fields, api
 
 
@@ -36,7 +37,7 @@ class oa_entrust(models.Model):
         etname = '委托（%s → %s）' % (etfromname, ettoname)
         vals.setdefault('et_name', etname)
         order = super(oa_entrust, self).create(vals)
-        util.mail_activity.send_message(order, self._name, order.et_to.user_id.id, '委托')
+        mail_activity.send_message(order, self._name, order.et_to.user_id.id, '委托')
         return order
 
     @api.multi
@@ -54,6 +55,27 @@ class oa_entrust(models.Model):
         vals.setdefault('et_name', etname)
         if 'et_to' in vals:
             etto = self.env['hr.employee'].browse(vals.get('et_to'))
-            util.mail_activity.send_message(self, self._name, etto.user_id.id, '委托')
+            mail_activity.send_message(self, self._name, etto.user_id.id, '委托')
         order = super(oa_entrust, self).write(vals)
         return order
+
+
+class mail_activity:
+
+    def send_message(self, name, user_id, activity_type):
+        '''
+        发送消息
+        :param name: 模型名称 _name
+        :param user_id: 发送用户
+        :param activity_type: 活动类型
+        :return:
+        '''
+        res_model_id = self.env['ir.model'].search([('model', '=', name)])
+        self.env['mail.activity'].sudo().create({
+            'res_model_id': res_model_id.id,
+            'res_id': self.id,
+            'user_id': user_id,
+            'activity_type_id': self.env['mail.activity.type'].search([('name', '=', activity_type)]).id,
+            'summary': activity_type,
+            'date_deadline': datetime.now(),
+        })
