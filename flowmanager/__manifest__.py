@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 {
-
     'license': 'LGPL-3',
     'name': "流程管理",
     'summary': """
@@ -8,6 +7,8 @@
     'description': """
     流程管理，实现基础表单和流程分离
     """,
+    'price': 110,
+    'currency': 'EUR',
     'author': "一叶障目",
     'website': "http://www.yourcompany.com",
     'category': 'OA',
