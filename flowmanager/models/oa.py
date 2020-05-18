@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 from odoo.osv import osv
 
 POSITION = [('p0', 'p0'), ('p1', 'p1'), ('p2', 'p2'), ('p3', 'p3'), ('p4', 'p4'), ('p5', 'p5'), ('p6', 'p6'),
@@ -25,12 +25,10 @@ class oa(models.Model):
         uinfo = self.env['hr.employee'].search([('name', '=', uname)])
         return self.env['hr.employee'].search([('name', '=', uinfo.name)], limit=1)
 
-    ismark = [('1', '被标记'), ('0', '未被标记')]
     oa_name = fields.Char(string='名称', index=True, )
     oa_createdate = fields.Date(string='创建时间', readonly=False, default=fields.Date.context_today)
     oa_applicant = fields.Many2one('hr.employee', string='申请人', readonly=True, default=_default_oa_applicant)
-    user_id = fields.Many2one('res.users', string='申请人id', default=lambda self: self.env.user,
-                              index=True, required=True)
+    user_id = fields.Many2one('res.users', string='申请人id', default=lambda self: self.env.user)
     oa_approver = fields.Many2many('hr.employee', 'oa_oa_approver_hr_employee_rel', string='当前审批人', required=True)
     oa_nextapprover = fields.Many2many('hr.employee', 'oa_oa_nextapprover_hr_employee_rel', string='下一级审批人',
                                        required=True)
@@ -38,21 +36,18 @@ class oa(models.Model):
         ('nosubmit', '草稿'),
         ('noapprove', '待审批'),
         ('approving', '审批中'),
-        ('ok', '完成'), ('goback', '被驳回'), ('editing', '编辑中'), ('termination', '终止')], string='状态',
-        copy=False,
-        index=True,
-        readonly=True, store=True)
+        ('ok', '完成'), ('goback', '被驳回'), ('editing', '编辑中'), ('termination', '终止')], string='状态')
     oa_flowway = fields.Many2one('oa.flow', string="流程名称", readonly=False)
     oa_flowwaylines = fields.One2many('oa.flow.line.content', 'line_lvcid', string='流程行')
     oa_flowwaysteps = fields.One2many('oa.flow.step', 'step_lvid', string='流程步骤')
     oa_comment = fields.Char(string='备注')
     oa_ordertype = fields.Many2one('oa.ordertype', string='单子类型')
 
-    # approvers = fields.Char(string='审批人')
 
     def getflowway(self, vals):
         '''简单的获取流程'''
-        flowways = self.env['oa.flow'].search([('oaflow_flowtype', '=', self.oa_ordertype.id)])
+        flowways = self.env['oa.flow'].search(
+            [('oaflow_flowtype', '=', self.oa_ordertype.id)])
         self.oa_flowway = flowways
         flowwaylines2 = self.env['oa.flow.line.content']
         for line in flowways.oaflow_lines:
@@ -180,7 +175,7 @@ class oa(models.Model):
                         'line_lvcid': self.id,
                         'candidate_ids': [[6, 0, canids]]
                     })
-                # 全部为空的情况
+                # 全部为空的情况（候选人会默认为申请人）
                 elif not line.department_id and not line.positer_id and not line.isteamapproval and not line.candidate_ids:
 
                     canids.append(self.env['hr.employee'].search([('id', '=', candidata.id)]).id)
@@ -239,8 +234,7 @@ class oa(models.Model):
         提交单子
         :return:
         '''
-        uname = self.env['res.users'].browse(self.env.uid).name
-        uinfo = self.env['hr.employee'].search([('name', '=', uname)])
+        uinfo = self.env['hr.employee'].search([('user_id', '=', self.env.uid)])
         if uinfo.id in self.oa_approver._ids:
             # 找到当前审批的步骤从1开始
             _index = int(0)
@@ -263,8 +257,6 @@ class oa(models.Model):
                 self.update({
                     'oa_state': 'ok'
                 })
-                # if self.ismarked == '1':
-                #     self.env['oa.jingyuan'].search([('name', '=', self.mainorder)]).state = self.mainorderstate
             if len(newflowwaylines) == 1:
                 self.oa_approver = newflowwaylines[0].candidate_ids
                 self.oa_nextapprover = False
@@ -281,39 +273,29 @@ class oa(models.Model):
                                 self.update({
                                     'oa_state': 'editing'
                                 })
-            if not self.oa_ordertype.isother_mode:
-                mainactivity = self.env['mail.activity'].search([('res_model', '=', 'oa'), ('res_id', '=', self.id)])
-                if mainactivity:
-                    mainactivity.action_done()
-            else:
-                base_id = self.env[self.oa_ordertype.model_name.model].search(
-                    [('x_oa_resourceflow', '=', self.id)]).id
-                mainactivity = self.env['mail.activity'].search(
-                    [('res_model', '=', self.oa_ordertype.model_name.model), ('res_id', '=', base_id)])
-                if mainactivity:
-                    mainactivity.action_done()
-
             self._set_flowway_step(_index - 1, '已提交')
 
             # 添加提交单据人员的管理员关注
-            oa_info = self.env['oa'].search([('id', '=', self.id)])
-            uname = self.env['res.users'].browse(self.env.uid).name
-            uinfo = self.env['hr.employee'].search([('name', '=', uname)])
-            employee_info = self.env['hr.employee'].search([('name', '=', uinfo.name)], limit=1)
+            employee_info = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
 
             if employee_info.parent_id.id:
                 manager_info = self.env['hr.employee'].search([('id', '=', employee_info.parent_id.id)], limit=1)
-                manager_user = self.env['res.users'].search([('name', '=', manager_info.name)])
+                manager_user = manager_info.user_id
 
                 mail_invite = self.env['mail.wizard.invite'].with_context({
-                    'default_res_model': oa_info._name,
+                    'default_res_model': self._name,
                     'default_res_id': self.id}).create({
                     'partner_ids': [(4, manager_user.partner_id.id)],
                     'send_mail': False,
                 })
                 mail_invite.add_followers()
         else:
-            raise osv.except_osv('您没有权限提交此单据！')
+            return {
+                'warning': {
+                    'title': _("流程管理提示您："),
+                    'message': _("您没有权限提交此单据"),
+                },
+            }
 
     def action_approve_pass(self):
         '''
@@ -337,8 +319,6 @@ class oa(models.Model):
             self.update({
                 'oa_state': 'ok'
             })
-            # if self.ismarked == '1':
-            #     self.env['oa.jingyuan'].search([('name', '=', self.mainorder)]).state = self.mainorderstate
         if len(newflowwaylines) == 1:
             self.oa_approver = newflowwaylines[0].candidate_ids
             self.oa_nextapprover = False
@@ -398,20 +378,75 @@ class oa(models.Model):
         驳回至申请人
         :return:
         '''
-        _index = int(0)
-        '''当单子回到申请人手中时，单子的状态会修改为草稿状态，提示申请人重新提交'''
-        self.update({
-            'oa_state': 'goback'
-        })
-        # 重置流程行中执行状态
-        for line in self.oa_flowwaylines:
-            if line.positer_state:
-                line.positer_state = ''
-        self.oa_approver = self.env['hr.employee'].search([('name', '=', self.oa_applicant.name)])
-        line2 = self.oa_flowwaylines[_index + 1]
-        strname2 = line2.candidate_ids
-        self.oa_nextapprover = strname2
-        self._set_flowway_step(_index, '驳回至申请人')
+        uinfo = self.env['hr.employee'].search([('user_id', '=', self.env.uid)])
+        if uinfo.id in self.oa_approver._ids:
+            _index = int(0)
+            '''当单子回到申请人手中时，单子的状态会修改为草稿状态，提示申请人重新提交'''
+            self.update({
+                'oa_state': 'nosubmit'
+            })
+            # 重置流程行中执行状态
+            for line in self.oa_flowwaylines:
+                if line.positer_state:
+                    line.positer_state = ''
+            self.oa_approver = self.env['hr.employee'].search([('name', '=', self.oa_applicant.name)])
+            line2 = self.oa_flowwaylines[_index + 1]
+            strname2 = line2.candidate_ids
+            self.oa_nextapprover = strname2
+            self._set_flowway_step(_index, '驳回至申请人')
+        else:
+            raise osv.except_osv('当前审批人不是你！')
+
+    def action_approve_rejected_toSomeOne(self, linenumber):
+        '''
+        驳回到某个人
+        :return:
+        '''
+        uinfo = self.env['hr.employee'].search([('user_id', '=', self.env.uid)])
+        if uinfo.id in self.oa_approver._ids:
+            _index = int(0)
+            _index_to = int(0)
+            # 当前操作步骤步数
+            _index = self._get_index(approver=uinfo, flowwaylines=self.oa_flowwaylines)
+            # 退回到的步数
+            _index_to = self._get_index_bynumber(number=linenumber, flowwaylines=self.oa_flowwaylines)
+            if _index <= _index_to:
+                raise osv.except_osv('请选择已进行审批操作的驳回对象！')
+            else:
+                position = int(0)
+                # 重置流程行中执行状态
+                for line in self.oa_flowwaylines:
+                    position += 1
+                    if position >= _index_to and position < _index and line.positer_state:
+                        line.positer_state = ''
+
+                if _index_to - 1 > 0:
+                    '''当单子处于被驳回但又未回到申请人手中时，单子的状态会修改为被驳回状态，提示上一审批人重新审核'''
+                    line = self.oa_flowwaylines[_index_to - 1]
+                    strname = line.candidate_ids
+                    self.oa_approver = strname
+                    if self.oa_approver.id == self.oa_applicant.id and not line.positer_id and line.isteamapproval != '0' and not line.department_id:
+                        # 说明这是一步需要自己完成的步骤，可能是填写，或是修改
+                        if self.oa_ordertype == '2' or self.oa_ordertype == '5':
+                            self.update({
+                                'oa_state': 'editing'
+                            })
+                    else:
+                        self.update({
+                            'oa_state': 'goback'
+                        })
+                else:
+                    '''当单子回到申请人手中时，单子的状态会修改为草稿状态，提示申请人重新提交'''
+                    self.update({
+                        'oa_state': 'nosubmit'
+                    })
+                    self.oa_approver = self.env['hr.employee'].search([('name', '=', self.oa_applicant.name)])
+                line2 = self.oa_flowwaylines[_index_to]
+                strname2 = line2.candidate_ids
+                self.oa_nextapprover = strname2
+                self._set_flowway_step(_index_to, '驳回到')
+        else:
+            raise osv.except_osv('当前审批人不是你！')
 
     def action_approve_termination(self):
         '''
@@ -446,6 +481,18 @@ class oa(models.Model):
             if approver in i.candidate_ids and (not i.positer_state or i.positer_state == '3'):
                 return int(position)
 
+    def _get_index_bynumber(self, number, flowwaylines):
+        '''
+        传入当前审批人，找到单子进行的步骤
+        :param approver:
+        :return:
+        '''
+        position = int(0)
+        for i in flowwaylines:
+            position += 1
+            if number == i.approvalnumber:
+                return int(position)
+
     def _get_indexs(self, approver, flowwaylines):
         '''
         传入当前审批人，找到单子候选人相同的步骤
@@ -478,6 +525,7 @@ class oa(models.Model):
             })
             # 获取需要删除操作状态 的流程行 的候选人
             approval2 = self.oa_flowwaylines[index - 2].candidate_ids
+            # 判断流程是否可跳过，如果可跳过，则相同人员的操作也要重置
             if self.oa_flowway.oaflow_passapprove == '1':
                 for line in self.oa_flowwaylines:
                     position += 1
@@ -525,7 +573,7 @@ class oa(models.Model):
         operator = self.env['hr.employee'].search(
             [('name', '=', self.env['res.users'].browse(self.env.uid).name)])
         if not operator:
-            raise osv.except_osv('请在员工处添加此人！')
+            raise osv.except_osv('此操作者不是公司的员工，请在员工处添加此人！')
         else:
             operatorname = operator.name
         operatingresult = operatstate
@@ -545,6 +593,23 @@ class oa(models.Model):
             self.set_chatter_message(operator=operatorname, operationtime=operatingtime,
                                      operationresult=operatingresult,
                                      operationdesc=operatingdesc)
+        else:
+            # 判断是普通模式还是基础表单审批模式
+            # 但是现在是版本默认是基础表单审批模式
+            if not self.oa_ordertype.isother_mode:
+                mainactivitys = self.env['mail.activity'].search([('res_model', '=', 'oa'), ('res_id', '=', self.id)])
+                for mainactivity in mainactivitys:
+                    mainactivity.action_done()
+            else:
+                base_id = self.env[self.oa_ordertype.model_name.model].search(
+                    [('x_oa_resourceflow', '=', self.id)]).id
+                mainactivitys = self.env['mail.activity'].search(
+                    [('res_model', '=', self.oa_ordertype.model_name.model), ('res_id', '=', base_id)])
+                for mainactivity in mainactivitys:
+                    mainactivity.update({
+                        'note': '''<font color='red'>处理意见：%s</font>''' % ('')
+                    })
+                    mainactivity.action_done()
 
     def set_chatter_message(self, operator, operationtime, operationresult, operationdesc):
         '''
@@ -572,6 +637,23 @@ class oa(models.Model):
                                     </ul>''' % (
             operationtime, operator, operationresult, operationdesc, name))
 
+        # 判断是普通模式还是基础表单审批模式
+        # 但是现在是版本默认是基础表单审批模式
+        if not self.oa_ordertype.isother_mode:
+            mainactivitys = self.env['mail.activity'].search([('res_model', '=', 'oa'), ('res_id', '=', self.id)])
+            for mainactivity in mainactivitys:
+                mainactivity.action_done()
+        else:
+            base_id = self.env[self.oa_ordertype.model_name.model].search(
+                [('x_oa_resourceflow', '=', self.id)]).id
+            mainactivitys = self.env['mail.activity'].search(
+                [('res_model', '=', self.oa_ordertype.model_name.model), ('res_id', '=', base_id)])
+            for mainactivity in mainactivitys:
+                mainactivity.update({
+                    'note': '''<font color='red'>处理意见：%s</font>''' % (operationdesc)
+                })
+                mainactivity.action_done()
+
         '''
         自动添加安排给下一级审批人(使用OA流程单据作为通知单)
         '''
@@ -591,8 +673,7 @@ class oa(models.Model):
         自动添加安排给下一级审批人(使用基础单据作为通知单)
         '''
         for approver in self.oa_approver:
-            next_approver_user_info = self.env['res.users'].search([('name', '=', approver.display_name)])
-            next_approver_partner_id = next_approver_user_info.partner_id.id
+            next_approver_partner_id = approver.user_id.partner_id.id
             '''
             自动添加安排给下一级审批人(使用基础单据作为通知单) 如果不进行活动安排，则需要给基础单据添加关注者
             '''
@@ -610,14 +691,21 @@ class oa(models.Model):
                         'date_deadline': datetime.datetime.now(),
                     })
                 else:
-                    raise  osv.except_osv('如果开启了基础表单审批模式，请在基础表单动作按钮处点击【提交审批】')
+                    raise osv.except_osv('如果开启了基础表单审批模式，请在基础表单动作按钮处点击【提交审批】')
+
+                # 在OA流程单内添加关注者
+                mail_invite = self.env['mail.wizard.invite'].with_context({
+                    'default_res_model': "oa",
+                    'default_res_id': self.id}).create({
+                    'partner_ids': [(4, next_approver_partner_id)], 'send_mail': False})
+                mail_invite.add_followers()
+
             else:
                 mail_invite = self.env['mail.wizard.invite'].with_context({
                     'default_res_model': self.oa_ordertype.model_name.model,
                     'default_res_id': current_recipt_id}).create({
                     'partner_ids': [(4, next_approver_partner_id)], 'send_mail': False})
                 mail_invite.add_followers()
-
 
     @api.model
     def create(self, vals):
@@ -687,55 +775,37 @@ class oa(models.Model):
         uname = self.env['res.users'].browse(self.env.uid).name
         uinfo = self.env['hr.employee'].search([('name', '=', uname)])
         if uinfo.id in self.oa_approver._ids:
-            if not self.oa_ordertype.isother_mode:
-                mainactivity = self.env['mail.activity'].search([('res_model', '=', 'oa'), ('res_id', '=', self.id)])
-                if mainactivity:
-                    mainactivity.action_done()
-            else:
-                base_id = self.env[self.oa_ordertype.model_name.model].search(
-                    [('x_oa_resourceflow', '=', self.id)]).id
-                mainactivity = self.env['mail.activity'].search(
-                    [('res_model', '=', self.oa_ordertype.model_name.model), ('res_id', '=', base_id)])
-                if mainactivity:
-                    mainactivity.action_done()
-            # 1、获取当前流程单类型的信息
-            ordertypeinfo = self.env['oa.ordertype'].search([('id', '=', self.oa_ordertype.id)])
-            # 2、获取此类型的使用模型
-            current_res_model = ordertypeinfo.model_name.model
-            # 3、获取流程单内使用此模型的字段
-            fieldname = self.env['ir.model.fields'].search(
-                [('model', '=', 'oa'), ('relation', '=', current_res_model)]).name
-
-            sql = "SELECT " + fieldname + " FROM oa WHERE id='" + str(self.id) + "'"
-            self._cr.execute(sql)
-            baseorderid = self._cr.fetchall()
-            current_recipt_id = baseorderid[0][0]
-            baseorder = self.env[current_res_model].browse(current_recipt_id)
-            mainactivitys2 = self.env['mail.activity'].search(
-                [('res_name', '=', baseorder.name)])
-            for mainactivity in mainactivitys2:
-                mainactivity.action_done()
             self.action_approve_pass()
         else:
-            raise osv.except_osv('当前审批人不是你！')
+            raise osv.except_osv("当前审批人不是你")
+
+    def action_approval_js(self, resid):
+        # 批准事件
+        uname = self.env['res.users'].browse(self.env.uid).name
+        uinfo = self.env['hr.employee'].search([('name', '=', uname)])
+        order = self.env['oa'].browse(resid)
+        if uinfo.id in order.oa_approver._ids:
+            order.action_approve_pass()
+        else:
+            return {
+                'warning': {
+                    'title': _("流程管理提示您："),
+                    'message': _("当前审批人不是你"),
+                },
+            }
 
     def action_sure(self):
         # 驳回确认时触发事件
-        uname = self.env['res.users'].browse(self.env.uid).name
-        uinfo = self.env['hr.employee'].search([('name', '=', uname)])
+        uinfo = self.env['hr.employee'].search([('user_id', '=', self.env.uid)])
         if uinfo.id in self.oa_approver._ids:
-            if not self.oa_ordertype.isother_mode:
-                mainactivity = self.env['mail.activity'].search([('res_model', '=', 'oa'), ('res_id', '=', self.id)])
-                if mainactivity:
-                    mainactivity.action_done()
-            else:
-                base_id = self.env[self.oa_ordertype.model_name.model].search(
-                    [('x_oa_resourceflow', '=', self.id)]).id
-                mainactivity = self.env['mail.activity'].search(
-                    [('res_model', '=', self.oa_ordertype.model_name.model), ('res_id', '=', base_id)])
-                if mainactivity:
-                    mainactivity.action_done()
+
+            # uidapprover = self.env['hr.employee'].search([('user_id', '=', self.env.uid)])
+            # _index = self._get_index(approver=uidapprover, flowwaylines=self.oa_flowwaylines)
+            # line = self.oa_flowwaylines[_index - 1]
+            # line.
+
             self.action_approve_rejected()
+
         else:
             raise osv.except_osv('当前审批人不是你！')
 
@@ -761,87 +831,110 @@ class oa(models.Model):
             flowwaylines2 += new_line
         self.oa_flowwaylines = flowwaylines2
 
-    def otherorder_commit(self):
-        otherorder = self.env.context.get('active_id')
-        otherorder_model = self.env.context.get('active_model')
-        omodel = self.env['ir.model'].search([('model', '=', otherorder_model)])
+    def otherorder_commit(self, res_id, model):
+        omodel = self.env['ir.model'].search([('model', '=', model)])
         ordertype = self.env['oa.ordertype'].search([('model_name', '=', omodel.id)])
         typename = ordertype.name
         newformname = self.env['ir.sequence'].search([('name', '=', typename)]).next_by_id()
         fieldname = 'x_oa_%s_docname' % (str.lower(ordertype.sequence_prefix))
-        res = {
-            'oa_application': self.env['hr.employee'].search([('name', '=', self.env.user.name)]).id,
-            fieldname: otherorder,
-            'oa_name': newformname,
-            'oa_state': 'nosubmit',
-            'oa_ordertype': ordertype.id,
-        }
-        order = self.env['oa'].create(res)
-        baseorder = self.env[otherorder_model].browse(otherorder)
-        baseorder.update({
-            'x_oa_resourceflow': order.id
-        })
-        order.action_commit()
+        # 判断当前传过来的基础单据是否绑定过流程单
+        saleorder = self.env[model].search([('id', '=', res_id)])
+        if not saleorder.x_oa_resourceflow:
+            res = {
+                'oa_application': self.env['hr.employee'].search([('name', '=', self.env.user.name)]).id,
+                fieldname: res_id,
+                'oa_name': newformname,
+                'oa_state': 'nosubmit',
+                'oa_ordertype': ordertype.id,
+            }
+            order = self.env['oa'].create(res)
+            saleorder.update({
+                'x_oa_resourceflow': order.id
+            })
+            order.action_commit()
+        else:
+            saleorder.x_oa_resourceflow.action_commit()
+        # else:
+        #     raise osv.except_osv("已经绑定过了，不能再次创建流程单！")
 
+    # class mail_activity(models.Model):
+    #     _inherit = 'mail.activity'
+    #
+    #
+    #     def action_apporval(self):
+    #         if self.env.uid == self.user_id.id:
+    #             # 3、获取流程单内使用此模型的字段
+    #             fieldname = self.env['ir.model.fields'].search(
+    #                 [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
+    #             oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
+    #             oa_order.oa_comment = self.note
+    #             MailActivity.action_done(self)
+    #             oa_order.action_approve_pass()
+    #         else:
+    #             raise osv.except_osv('当前审批人不是你！')
+    #
+    #
+    #     def action_refuse(self):
+    #         if self.env.uid == self.user_id.id:
+    #             if self.note:
+    #                 # 3、获取流程单内使用此模型的字段
+    #                 fieldname = self.env['ir.model.fields'].search(
+    #                     [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
+    #                 oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
+    #                 oa_order.oa_comment = self.note
+    #                 MailActivity.action_done(self)
+    #                 oa_order.action_approve_rejected()
+    #             else:
+    #                 raise osv.except_osv('请填写处理意见！')
+    #         else:
+    #             raise osv.except_osv('当前审批人不是你！')
+    #
+    #
+    #     def action_refuse_to_approve(self):
+    #         '''
+    #         驳回至申请人
+    #         :return:
+    #         '''
+    #         if self.env.uid == self.user_id.id:
+    #             if self.note:
+    #                 # 3、获取流程单内使用此模型的字段
+    #                 fieldname = self.env['ir.model.fields'].search(
+    #                     [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
+    #                 oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
+    #                 oa_order.oa_comment = self.note
+    #                 MailActivity.action_done(self);
+    #                 oa_order.action_goback_to_approve()
+    #             else:
+    #                 raise osv.except_osv('请填写处理意见！')
+    #         else:
+    #             raise osv.except_osv('当前审批人不是你！')
 
-# class mail_activity(models.Model):
-#     _inherit = 'mail.activity'
-#
-#
-#     def action_apporval(self):
-#         if self.env.uid == self.user_id.id:
-#             # 3、获取流程单内使用此模型的字段
-#             fieldname = self.env['ir.model.fields'].search(
-#                 [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
-#             oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
-#             oa_order.oa_comment = self.note
-#             MailActivity.action_done(self)
-#             oa_order.action_approve_pass()
-#         else:
-#             raise osv.except_osv('当前审批人不是你！')
-#
-#
-#     def action_refuse(self):
-#         if self.env.uid == self.user_id.id:
-#             if self.note:
-#                 # 3、获取流程单内使用此模型的字段
-#                 fieldname = self.env['ir.model.fields'].search(
-#                     [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
-#                 oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
-#                 oa_order.oa_comment = self.note
-#                 MailActivity.action_done(self)
-#                 oa_order.action_approve_rejected()
-#             else:
-#                 raise osv.except_osv('请填写处理意见！')
-#         else:
-#             raise osv.except_osv('当前审批人不是你！')
-#
-#
-#     def action_refuse_to_approve(self):
-#         '''
-#         驳回至申请人
-#         :return:
-#         '''
-#         if self.env.uid == self.user_id.id:
-#             if self.note:
-#                 # 3、获取流程单内使用此模型的字段
-#                 fieldname = self.env['ir.model.fields'].search(
-#                     [('model', '=', 'oa'), ('relation', '=', self.res_model)]).name
-#                 oa_order = self.env['oa'].search([(fieldname, '=', self.res_id)])
-#                 oa_order.oa_comment = self.note
-#                 MailActivity.action_done(self);
-#                 oa_order.action_goback_to_approve()
-#             else:
-#                 raise osv.except_osv('请填写处理意见！')
-#         else:
-#             raise osv.except_osv('当前审批人不是你！')
+    def action_dotest(self):
+        raise osv.except_osv("测试点击")
+
+    def get_all_ordertype_model_name(self):
+        '''
+        获取所有的ordertype 中的model_name
+        :return:
+        '''
+        ordertypes = self.env['oa.ordertype'].search([])
+        bind_model_name = []
+        for type in ordertypes:
+            bind_model_name.append(type.model_name.model)
+        return bind_model_name
+
+    def getotherorder_flow_state(self, modelname, resid):
+        otherorder = self.env[modelname].search([('id', '=', resid)])
+        ordertstate = otherorder.x_oa_state
+        ordertflowid = otherorder.x_oa_resourceflow.id
+        return [ordertflowid, ordertstate]
 
 
 class oa_ordertype(models.Model):
     _name = 'oa.ordertype'
     _order = 'code desc'
 
-    name = fields.Char(string='类型名称', help='为你的单据类型命名')
+    name = fields.Char(string='类型名称', help='为你的单据类型命名，最后请以“单”字结尾')
     code = fields.Char(string='类型编号', help='为1、2、3、4……顺序')
     model_name = fields.Many2one('ir.model', string='模型名称', help='单据关联的模型')
     sequence_prefix = fields.Char('序列前缀', help='为你的单据编号设置前缀')
@@ -940,7 +1033,7 @@ class oa_ordertype(models.Model):
             })
             # 获取上级菜单
             # 再则生成menu
-            sql = "select id from ir_ui_menu where name ='流程单'"
+            sql = "select id from ir_ui_menu where name ='审批流程单'"
             self._cr.execute(sql)
             menu_parent_id = self._cr.dictfetchall()[0].get('id')
             menu_action = 'ir.actions.act_window,%d' % (act_id)
@@ -986,7 +1079,8 @@ class oa_ordertype(models.Model):
     def action_start_others_mode(self):
         if not self.start_others_mode:
             # 创建菜单时的参数
-            param = "ir.actions.server,%d;ir.actions.server,%d;ir.actions.server,%d;ir.ui.view,%d;ir.model.fields,%d;ir.model.fields,%d"
+            # param = "ir.actions.server,%d;ir.actions.server,%d;ir.actions.server,%d;ir.ui.view,%d;ir.model.fields,%d;ir.model.fields,%d"
+            param = "ir.ui.view,%d;ir.model.fields,%d;ir.model.fields,%d"
             if not self.isother_mode:
                 self.isother_mode = True
             if self.isother_mode:
@@ -1017,26 +1111,19 @@ class oa_ordertype(models.Model):
                         'selection': "[('nosubmit', '草稿'),('noapprove', '待审批'),('approving', '审批中'),('ok', '完成'), ('goback', '被驳回'), ('editing', '编辑中'), ('termination', '终止')]",
                     })
                     # 其次在添加布局
-                    # '''<xpath expr="//header" position="inside">
-                    #      <button name="%(flowmanager.action_othermode_commit)d" string="提交审批" type="action" class="oe_highlight"
-                    #          attrs="{'invisible': ['|',('x_oa_state', 'not in', ['nosubmit','',False])]}"/>
-                    #      <button name="%(flowmanager.action_othermode_approve)d" string="批准" type="action" class="oe_highlight"
-                    #              attrs="{'invisible': ['|',('x_oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
-                    #      <button name="%(flowmanager.action_othermode_reject)d" string="驳回" type="action"
-                    #              class="oe_highlight"
-                    #              attrs="{'invisible': ['|',('x_oa_state', 'not in', ['noapprove','approving','goback'])]}"/>
-                    #      <button name="%(flowmanager.action_othermode_over)d" string="审批终止" type="action" class="oe_highlight"
-                    #              attrs="{'invisible': ['|',('x_oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+                    # '''<xpath expr="//form" position="attributes">
+                    #         <attribute name="js_class">tree_form_view_button</attribute>
                     # </xpath>'''
                 arch_db = '''<?xml version="1.0"?><data>
-                    <xpath expr="//sheet" position="inside">
-                         <field name="x_oa_resourceflow" readonly="1"/>
-                         <field name="x_oa_state" readonly="1"/>
+                    <xpath expr="//form" position="attributes">
+                         <attribute name="js_class">tree_form_view_button</attribute>
                     </xpath>
-                    <xpath expr="//header" position="inside">
-                             <button name="%(action_oa_step)d" string="驳回" type="action"
-                                     class="oe_highlight"
-                                     attrs="{'invisible': ['|',('x_oa_state', 'not in', ['noapprove','approving','goback'])]}"/>
+                    <xpath expr="//header" position="after">
+	                    <button type="action" class="pull-right btn-primary" style="margin-top: 13px;margin-right:1px;background-color: #875a7b;"
+	                                string="流程单 ：" icon="fa-flag">
+        				    <field name="x_oa_resourceflow" readonly="1" style="padding-right: 10px;padding-left: 5px;font-size: initial;"/>
+        				    <field name="x_oa_state" readonly="1"/>
+                        </button>
                     </xpath>
                 </data>'''
                 # 获取继承视图
@@ -1050,33 +1137,34 @@ class oa_ordertype(models.Model):
                     'inherit_id': inherit_id.id,
                 })
                 # 最后为添加的按钮 加上执行方法
-                model_id = self.env['ir.model'].search([('model', '=', 'oa')])
+                # model_id = self.env['ir.model'].search([('model', '=', 'oa')])
                 # 'model_' + str(self.model_name.model).replace('.', "_")
-                act_id1 = self.env['ir.actions.server'].sudo().create({
-                    'name': "提交审批",
-                    'type': 'ir.actions.server',
-                    'model_id': model_id.id,
-                    'binding_model_id': self.model_name.id,
-                    'state': 'code',
-                    'code': 'model.otherorder_commit()',
-                })
-                act_id2 = self.env['ir.actions.server'].sudo().create({
-                    'name': "批准",
-                    'type': 'ir.actions.server',
-                    'model_id': model_id.id,
-                    'binding_model_id': self.model_name.id,
-                    'state': 'code',
-                    'code': 'model.action_approval()',
-                })
-                act_id3 = self.env['ir.actions.server'].sudo().create({
-                    'name': "审批终止",
-                    'type': 'ir.actions.server',
-                    'model_id': model_id.id,
-                    'binding_model_id': self.model_name.id,
-                    'state': 'code',
-                    'code': 'model.action_approve_termination()',
-                })
-                param = param % (act_id1, act_id2, act_id3, view_id, field_id1, field_id2)
+                # act_id1 = self.env['ir.actions.server'].sudo().create({
+                #     'name': "提交审批",
+                #     'type': 'ir.actions.server',
+                #     'model_id': model_id.id,
+                #     'binding_model_id': self.model_name.id,
+                #     'state': 'code',
+                #     'code': 'model.otherorder_commit()',
+                # })
+                # act_id2 = self.env['ir.actions.server'].sudo().create({
+                #     'name': "批准",
+                #     'type': 'ir.actions.server',
+                #     'model_id': self.model_name.id,
+                #     'binding_model_id': self.model_name.id,
+                #     'state': 'code',
+                #     'code': 'record.x_oa_resourceflow.action_approval()',
+                # })
+                # act_id3 = self.env['ir.actions.server'].sudo().create({
+                #     'name': "审批终止",
+                #     'type': 'ir.actions.server',
+                #     'model_id': self.model_name.id,
+                #     'binding_model_id': self.model_name.id,
+                #     'state': 'code',
+                #     'code': 'record.x_oa_resourceflow.action_approve_termination()',
+                # })
+                # param = param % (act_id1, act_id2, act_id3, view_id, field_id1, field_id2)
+                param = param % (view_id, field_id1, field_id2)
                 self.update({
                     'start_others_mode': param
                 })

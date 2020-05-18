@@ -25,10 +25,14 @@
         'views/oa_flow_views.xml',
         'views/oa_ordertype.xml',
         'views/oa_entrust_view.xml',
+        'views/templates.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
+    ],
+    'qweb': [
+        'static/src/xml/tree_form_view_button.xml'
     ],
     'application': True,
     'sequence': 1,

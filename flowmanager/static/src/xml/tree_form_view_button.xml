@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template_01" xml:space="preserve">
+    <!-- 拓展Tree视图增加自定义按钮 -->
+    <!--<t t-extend="ListView.buttons">-->
+    <!--<t t-jquery="div.o_list_buttons" t-operation="append">-->
+
+    <!--<t t-if="widget.model == 'res.users'">-->
+    <!--<button class="btn btn-primary btn-sm o_list_tender_button_create" type="button">数据同步</button>-->
+    <!--</t>-->
+    <!--</t>-->
+    <!--</t>-->
+
+    <!-- 拓展Form视图增加自定义按钮 -->
+    <t t-extend="FormView.buttons">
+        <t t-jquery="button.o_form_button_create" t-operation="after">
+            <!--<t t-if="widget.displayName == '休假配置'">-->
+            <button class="btn btn-info btn-sm o_form_tender_button_commit"
+                    style="display:inline-block;visibility:hidden;" type="button">提交</button>
+            <button class="btn btn-success btn-sm o_form_tender_button_approval"
+                    style="display:inline-block;visibility:hidden;" type="button">批准</button>
+            <button class="btn btn-danger btn-sm o_form_tender_button_reject"
+                    style="display:inline-block;visibility:hidden;" type="button">驳回</button>
+            <!--<button class="btn btn-danger btn-sm o_form_tender_button_rejectTo"-->
+                    <!--style="display:inline-block;visibility:hidden;" type="button">驳回至</button>-->
+            <button class="btn btn-sm o_form_tender_button_approve_termination"
+                    style="display:inline-block;background-color: red;color: white;visibility:hidden;" type="button">审批终止</button>
+            <!--</t>-->
+        </t>
+    </t>
+</template>

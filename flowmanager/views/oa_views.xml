@@ -11,13 +11,18 @@
                         <field name="operator" invisible="1"/>
                         <field name="operatingresult" invisible="1"/>
                         <field name="operatingtime" invisible="1"/>
-                        <field name="operatingdesc" widget="html"/>
+                        <group>
+                            <group>
+                                <field name="rejectToperson"/>
+                            </group>
+                            <field name="operatingdesc" widget="text" placeholder="请输入驳回意见/原因"/>
+                        </group>
                     </sheet>
                     <footer>
                         <group>
                             <span>
                                 <button string="驳回" type="object" class="oe_highlight" name="action_reject"/>
-                                <button string="驳回至申请人" type="object" class="oe_highlight" name="action_reject_all"/>
+                                <!--<button string="驳回至申请人" type="object" class="oe_highlight" name="action_reject_all"/>-->
                                 <button string="再看看" class="oe_link" special="cancel"/>
                             </span>
                         </group>
@@ -27,7 +32,7 @@
         </record>
 
         <record model="ir.actions.act_window" id="action_oa_step">
-            <field name="name">填写驳回原因</field>
+            <field name="name">进行驳回处理</field>
             <field name="res_model">oa.flow.step</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
@@ -159,7 +164,7 @@
                         <button name="action_commit" string="提交" type="object" class="oe_highlight"
                                 attrs="{'invisible': ['|',('oa_state', 'not in', ['nosubmit'])]}"/>
 
-                        <button name="action_approval" string="批准" type="object" class="oe_highlight"
+                        <button name="action_approval" string="批准" type="object" class="oe_highlight" args="[id]"
                                 attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
 
                         <button name="%(action_oa_step)d" string="驳回" type="action"
@@ -349,7 +354,8 @@
                   active="True"
                   sequence="26" groups="flowmanager.group_flowmanager_user"/>
         <!-- menu categories -->
-        <menuitem name="流程单" id="menu_oa" parent="menu_root" sequence="1"/>
+        <menuitem name="审批流程单" id="menu_oa" parent="menu_root" sequence="1"/>
+        <menuitem name="工作流程单" id="menu_oa_work" parent="menu_root" sequence="3"/>
         <menuitem name="配置" id="menu_setting" parent="menu_root"
                   groups="flowmanager.group_flowmanager_manager" sequence="2"/>
         <menuitem name="表单" id="menu_oa_receipt" parent="menu_root"/>

@@ -27,7 +27,7 @@
                                 <field name="model_name"/>
                                 <field name="model_view"/>
                                 <field name="ir_sequence_id" invisible="1"/>
-                                <field name="isother_mode"/>
+                                <!--<field name="isother_mode"/>-->
                             </group>
                             <group>
                                 <field name="code"/>

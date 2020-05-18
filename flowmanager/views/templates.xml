@@ -1,10 +1,11 @@
 <odoo>
     <data>
-        <template id="assets_backend" name="oa_flow_jingyuan assets" inherit_id="web.assets_backend">
+        <template id="assets_backend" name="flowmanager assets" inherit_id="web.assets_backend">
             <xpath expr="." position="inside">
                 <!--<script type="text/javascript" src="/oa_flow_jingyuan/static/src/js/dialog_draggable.js"></script>-->
                 <!--<link rel="stylesheet" href="/flowmanager/static/src/css/button_style.css"/>-->
                 <!--<script type="text/javascript" src="/oa_flow_jingyuan/static/src/js/left_nav_menu.js"></script>-->
+                 <script type="text/javascript" src="/flowmanager/static/src/js/tree_form_view_button.js"></script>
             </xpath>
         </template>
     </data>
