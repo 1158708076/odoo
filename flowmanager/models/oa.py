@@ -834,8 +834,6 @@ class oa(models.Model):
     def otherorder_commit(self, res_id, model):
         omodel = self.env['ir.model'].search([('model', '=', model)])
         ordertype = self.env['oa.ordertype'].search([('model_name', '=', omodel.id)])
-        typename = ordertype.name
-        newformname = self.env['ir.sequence'].search([('name', '=', typename)]).next_by_id()
         fieldname = 'x_oa_%s_docname' % (str.lower(ordertype.sequence_prefix))
         # 判断当前传过来的基础单据是否绑定过流程单
         saleorder = self.env[model].search([('id', '=', res_id)])
@@ -843,7 +841,6 @@ class oa(models.Model):
             res = {
                 'oa_application': self.env['hr.employee'].search([('name', '=', self.env.user.name)]).id,
                 fieldname: res_id,
-                'oa_name': newformname,
                 'oa_state': 'nosubmit',
                 'oa_ordertype': ordertype.id,
             }
