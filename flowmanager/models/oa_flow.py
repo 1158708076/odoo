@@ -88,7 +88,7 @@ class oa_flow_line(models.Model):
     positer_id = fields.Many2one('hr.job', string='岗位', store=True)
     department_id = fields.Many2one('hr.department', string='部门', store=True)
     candidate_ids = fields.Many2many('hr.employee', string='候选人')
-    approvalnumber = fields.Selection(oa.POSITION, string='审批步骤')
+    approvalnumber = fields.Selection(oa.POSITION, string='审批步骤', help="选择步骤时，请不要重复")
     positer_desc = fields.Char(string='步骤名称')
     isteamapproval = fields.Selection([('0', '是'), ('1', '否')], string='是否团队审批', copy=False, index=True, store=True, )
     model_name = fields.Char('模型名称')

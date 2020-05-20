@@ -42,7 +42,7 @@
                                             <group>
                                                 <field name="model_name" invisible="1"/>
                                                 <field name="server_id" invisible="1"/>
-                                                <field name="approvalnumber" string="步骤"/>
+                                                <field name="approvalnumber" string="步骤" required="1"/>
                                                 <field name="condivalue" widget="domain"
                                                        options="{'model': 'model_name', 'in_dialog': True}"/>
                                             </group>
