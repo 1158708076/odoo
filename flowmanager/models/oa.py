@@ -43,7 +43,6 @@ class oa(models.Model):
     oa_comment = fields.Char(string='备注')
     oa_ordertype = fields.Many2one('oa.ordertype', string='单子类型')
 
-
     def getflowway(self, vals):
         '''简单的获取流程'''
         flowways = self.env['oa.flow'].search(
@@ -834,8 +833,6 @@ class oa(models.Model):
     def otherorder_commit(self, res_id, model):
         omodel = self.env['ir.model'].search([('model', '=', model)])
         ordertype = self.env['oa.ordertype'].search([('model_name', '=', omodel.id)])
-        typename = ordertype.name
-        newformname = self.env['ir.sequence'].search([('name', '=', typename)]).next_by_id()
         fieldname = 'x_oa_%s_docname' % (str.lower(ordertype.sequence_prefix))
         # 判断当前传过来的基础单据是否绑定过流程单
         saleorder = self.env[model].search([('id', '=', res_id)])
@@ -843,7 +840,6 @@ class oa(models.Model):
             res = {
                 'oa_application': self.env['hr.employee'].search([('name', '=', self.env.user.name)]).id,
                 fieldname: res_id,
-                'oa_name': newformname,
                 'oa_state': 'nosubmit',
                 'oa_ordertype': ordertype.id,
             }
@@ -1089,20 +1085,32 @@ class oa_ordertype(models.Model):
                     [('name', '=', 'x_oa_resourceflow'), ('model', '=', self.model_name.model)])
                 st_field = self.env['ir.model.fields'].search(
                     [('name', '=', 'x_oa_state'), ('model', '=', self.model_name.model)])
+
+                module = self.env['ir.model.data'].search(
+                    [('res_id', '=', self.model_name.id), ('model', '=', 'ir.model')]).module
                 if not re_field:
-                    fieldname = 'x_oa_resourceflow'
+                    fieldname1 = 'x_oa_resourceflow'
                     field_id1 = self.env['ir.model.fields'].sudo().create({
-                        'name': fieldname,
+                        'name': fieldname1,
                         'model': self.model_name.model,
                         'relation': 'oa',
                         'model_id': self.model_name.id,
                         'field_description': '源流程',
                         'ttype': 'many2one',
                     })
+                    field_data_name1 = 'field_' + self.model_name.model.replace(".", "_") + '_' + fieldname1
+                    field_data = {
+                        'module': module,
+                        'name': field_data_name1,
+                        'model': 'ir.model.fields',
+                        'res_id': field_id1.id,
+                    }
+                    field_data_id = self.env['ir.model.data'].sudo().create(field_data)
+
                 if not st_field:
-                    fieldname = 'x_oa_state'
+                    fieldname2 = 'x_oa_state'
                     field_id2 = self.env['ir.model.fields'].sudo().create({
-                        'name': fieldname,
+                        'name': fieldname2,
                         'model': self.model_name.model,
                         'related': 'x_oa_resourceflow.oa_state',
                         'model_id': self.model_name.id,
@@ -1110,6 +1118,15 @@ class oa_ordertype(models.Model):
                         'ttype': 'selection',
                         'selection': "[('nosubmit', '草稿'),('noapprove', '待审批'),('approving', '审批中'),('ok', '完成'), ('goback', '被驳回'), ('editing', '编辑中'), ('termination', '终止')]",
                     })
+                    field_data_name2 = 'field_' + self.model_name.model.replace(".", "_") + '_' + fieldname2
+                    field_data2 = {
+                        'module': module,
+                        'name': field_data_name2,
+                        'model': 'ir.model.fields',
+                        'res_id': field_id2.id,
+                    }
+                    field_data_id = self.env['ir.model.data'].sudo().create(field_data2)
+
                     # 其次在添加布局
                     # '''<xpath expr="//form" position="attributes">
                     #         <attribute name="js_class">tree_form_view_button</attribute>
