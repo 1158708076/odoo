@@ -20,3 +20,9 @@ access_oa_ordertype_rz,oa.ordertype.rz,model_oa_ordertype,group_flowmanager_js,1
 access_oa_entrust_manager,oa.entrust.manager,model_oa_entrust,group_flowmanager_manager,1,1,1,1
 access_oa_entrust_user,oa.entrust.user,model_oa_entrust,group_flowmanager_user,1,1,1,1
 access_oa_entrust_rz,oa.entrust.rz,model_oa_entrust,group_flowmanager_js,1,1,1,1
+access_oa_wx_manager,oa.wx.manager,model_oa_wx,group_flowmanager_manager,1,1,1,1
+access_oa_wx_user,oa.wx.user,model_oa_wx,group_flowmanager_user,1,0,0,0
+access_oa_wx_rz,oa.wx.rz,model_oa_wx,group_flowmanager_js,1,0,0,0
+access_msg_templete_manager,msg.templete.manager,model_msg_templete,group_flowmanager_manager,1,1,1,1
+access_msg_templete_user,msg.templete.user,model_msg_templete,group_flowmanager_user,1,0,0,0
+access_msg_templete_rz,msg.templete.rz,model_msg_templete,group_flowmanager_js,1,0,0,0

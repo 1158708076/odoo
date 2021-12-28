@@ -31,14 +31,14 @@
         <!--@ global 是否是全局-->
         <!--@ domain_force 过滤条件-->
         <!--@ groups 属于哪个组-->
-        <record model="ir.rule" id="rule_oa">
-            <field name="name">流程单</field>
-            <field name="model_id" ref="model_oa"/>
-            <field name="global" eval="True"/>
-            <field name="domain_force">
-                [('message_partner_ids.user_ids.id','parent_of',user.id)]
-            </field>
-            <field name="groups" eval="[(4,ref('group_flowmanager_user'))]"/>
-        </record>
+        <!--<record model="ir.rule" id="rule_oa">-->
+            <!--<field name="name">流程单</field>-->
+            <!--<field name="model_id" ref="model_oa"/>-->
+            <!--<field name="global" eval="True"/>-->
+            <!--<field name="domain_force">-->
+                <!--[('message_partner_ids.user_ids.id','parent_of',user.id)]-->
+            <!--</field>-->
+            <!--<field name="groups" eval="[(4,ref('group_flowmanager_user'))]"/>-->
+        <!--</record>-->
     </data>
 </odoo>

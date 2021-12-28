@@ -14,7 +14,7 @@
     'category': 'OA',
     'version': '11.0.1',
     # any module necessary for this one to work correctly
-    'depends': ['base', 'mail', 'hr'],
+    'depends': ['base', 'mail', 'hr', 'auth_signup', 'web'],
 
     # always loaded
     'data': [
@@ -25,7 +25,9 @@
         'views/oa_flow_views.xml',
         'views/oa_ordertype.xml',
         'views/oa_entrust_view.xml',
+        'views/oa_wx.xml',
         'views/templates.xml',
+        'views/auth_wx_login.xml',
     ],
     # only loaded in demonstration mode
     'demo': [
@@ -36,4 +38,5 @@
     ],
     'application': True,
     'sequence': 1,
+    'bootstrap': True,
 }

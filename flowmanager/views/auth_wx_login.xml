@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--<template id="flowmanager.login" inherit_id="auth_signup.login" name="Flowmanager Login">-->
+    <!--<xpath expr="//div/a[2]" position="after">-->
+    <!--<a t-if="wx_login" t-attf-href="/wx/login?{{ keep_query() }}">微信登录</a>-->
+    <!--</xpath>-->
+    <!--</template>-->
+
+    <template id="flowmanager.login" inherit_id="web.login_layout" name="Flowmanager Login Layout">
+        <xpath expr="//div[hasclass('container')]/div/div[hasclass('card-body')]" position="after">
+            <div style="align-self: center;margin: 0 0 20px 0;" class="btn btn-block">
+                <img src="/flowmanager/static/src/img/wx.png" style="width: 18px;margin: 0 0 2px 0;"></img>
+                <a t-if="signup_enabled"
+                   t-attf-href="/wx/login?{{ keep_query() }}">微信登录
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="flowmanager.wxlogin" name="Sign up login">
+        <t t-call="web.login_layout">
+            <form class="oe_signup_form" role="form" method="post" t-if="not message">
+                <img src="/flowmanager/static/src/img/login.png"
+                     style="width: -webkit-fill-available;"></img>
+            </form>
+        </t>
+    </template>
+</odoo>

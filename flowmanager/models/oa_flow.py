@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from myaddons.flowmanager.models import oa
-from odoo import models, fields, api
+from odoo import models, fields, api, _, exceptions
+
+POSITION = [('p0', 'p0'), ('p1', 'p1'), ('p2', 'p2'), ('p3', 'p3'), ('p4', 'p4'), ('p5', 'p5'), ('p6', 'p6'),
+            ('p7', 'p7'), ('p8', 'p8'), ('p9', 'p9'), ('p10', 'p10')]
 
 
 class oa_flow(models.Model):
@@ -22,25 +24,26 @@ class oa_flow(models.Model):
 
     is_workflow = fields.Boolean(string='是否加入工作流', default=False, help='默认为审批流，如果加入工作流，流程定义会改为审批工作流程的流程定义')
 
+    wx_templete = fields.Char(string="微信消息模板")
+
     @api.model
     def create(self, vals):
         if 'oaflow_flowtype' in vals:
             ordertype = self.env['oa.ordertype'].search([('id', '=', vals.get('oaflow_flowtype'))])
             vals.setdefault('oaflow_name', ordertype.name.replace("单", "") + "流程")
         oa_flowway = super(oa_flow, self).create(vals)
-        if vals.get('is_workflow'):
-            oa_flowway.creat_server_actions()
+        # if vals.get('is_workflow'):
+        #     oa_flowway.creat_server_actions()
         return oa_flowway
 
-    @api.multi
     def write(self, vals):
         if 'oaflow_flowtype' in vals:
             oaflow_flowtype = vals.get('oaflow_flowtype')
             ordertype = self.env['oa.ordertype'].search([('id', '=', oaflow_flowtype)])
             vals.setdefault('oaflow_name', str(ordertype.name).replace("单", "") + "流程")
         order = super(oa_flow, self).write(vals)
-        if self.is_workflow or vals.get('is_workflow'):
-            self.update_server_actions()
+        # if self.is_workflow or vals.get('is_workflow'):
+        #     self.update_server_actions()
         return order
 
     def creat_server_actions(self):
@@ -88,7 +91,7 @@ class oa_flow_line(models.Model):
     positer_id = fields.Many2one('hr.job', string='岗位', store=True)
     department_id = fields.Many2one('hr.department', string='部门', store=True)
     candidate_ids = fields.Many2many('hr.employee', string='候选人')
-    approvalnumber = fields.Selection(oa.POSITION, string='审批步骤', help="选择步骤时，请不要重复")
+    approvalnumber = fields.Selection(POSITION, string='审批步骤', help="选择步骤时，请不要重复")
     positer_desc = fields.Char(string='步骤名称')
     isteamapproval = fields.Selection([('0', '是'), ('1', '否')], string='是否团队审批', copy=False, index=True, store=True, )
     model_name = fields.Char('模型名称')
@@ -129,7 +132,7 @@ class oa_flow_line_content(models.Model):
     positer_id = fields.Many2one('hr.job', string='岗位', store=True)
     department_id = fields.Many2one('hr.department', string='部门', store=True)
     candidate_ids = fields.Many2many('hr.employee', string='候选人')
-    approvalnumber = fields.Selection(oa.POSITION, string='审批步骤')
+    approvalnumber = fields.Selection(POSITION, string='审批步骤')
     positer_desc = fields.Char(string='审批步骤名称')
     positer_state = fields.Selection([('1', '已提交'), ('2', '已通过'), ('3', '已驳回')], string='阶段审批状态', copy=False,
                                      index=True)
@@ -192,3 +195,10 @@ class oa_flow_step(models.Model):
         else:
             # 驳回到某个人
             oa.action_approve_rejected_toSomeOne(self.rejectToperson)
+
+
+class inherit_hr_employee(models.Model):
+    _inherit = 'hr.employee'
+
+    def sayhello(self):
+        raise exceptions.UserError(_("你好啊"))

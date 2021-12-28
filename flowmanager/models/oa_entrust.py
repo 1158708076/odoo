@@ -40,7 +40,6 @@ class oa_entrust(models.Model):
         mail_activity.send_message(order, self._name, order.et_to.user_id.id, '委托')
         return order
 
-    @api.multi
     def write(self, vals):
         etfromname = self.et_from.name
         ettoname = self.et_to.name

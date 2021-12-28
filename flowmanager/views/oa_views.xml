@@ -23,7 +23,7 @@
                             <span>
                                 <button string="驳回" type="object" class="oe_highlight" name="action_reject"/>
                                 <!--<button string="驳回至申请人" type="object" class="oe_highlight" name="action_reject_all"/>-->
-                                <button string="再看看" class="oe_link" special="cancel"/>
+                                <button string="再看看" class="btn-secondary" special="cancel"/>
                             </span>
                         </group>
                     </footer>
@@ -36,6 +36,7 @@
             <field name="res_model">oa.flow.step</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
+            <field name="context">{'default_step_lvid':active_id}</field>
         </record>
 
         <!--<record id="action_othermode_commit" model="ir.actions.server">-->
@@ -162,32 +163,32 @@
                 <form>
                     <header>
                         <button name="action_commit" string="提交" type="object" class="oe_highlight"
-                                attrs="{'invisible': ['|',('oa_state', 'not in', ['nosubmit'])]}"/>
+                                attrs="{'invisible': [('oa_state', 'not in', ['nosubmit'])]}"/>
 
                         <button name="action_approval" string="批准" type="object" class="oe_highlight" args="[id]"
-                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+                                attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
 
                         <button name="%(action_oa_step)d" string="驳回" type="action"
                                 class="oe_highlight"
-                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback'])]}"/>
+                                attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving','goback'])]}"/>
 
                         <!--attrs="{'invisible': [('applicant_id', '=', uid)]}"-->
 
                         <button name="action_approve_termination" string="审批终止" type="object" class="oe_highlight"
-                                attrs="{'invisible': ['|',('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
-                        <button name="action_attachment" string="附件上传" type="object" class="oe_highlight"
-                                groups="oa_jingyuan.group_oa_jingyuan_rs" attrs="{'invisible':True}"/>
+                                attrs="{'invisible': [('oa_state', 'not in', ['noapprove','approving','goback','editing'])]}"/>
+                        <!--<button name="action_attachment" string="附件上传" type="object" class="oe_highlight"-->
+                                <!--groups="oa_jingyuan.group_oa_jingyuan_rs" attrs="{'invisible':True}"/>-->
                         <field name="oa_state" widget="statusbar" statusbar_visible="nosubmit,noapprove,approving,ok"/>
                     </header>
                     <sheet>
-                        <div class="oe_button_box" name="button_box">
-                            <button name="%(action_window_oa_flow_context)d" type="action" class="oe_stat_button"
-                                    string="流程"
-                                    icon="fa-flag">
-                            </button>
-                        </div>
+                        <!--<div class="oe_button_box" name="button_box">-->
+                            <!--<button name="%(action_window_oa_flow_context)d" type="action" class="oe_stat_button"-->
+                                    <!--string="流程"-->
+                                    <!--icon="fa-flag">-->
+                            <!--</button>-->
+                        <!--</div>-->
                         <!--<button name="action_get_attachment_view" class="oe_stat_button" icon="fa-book" type="object"-->
-                        <!--attrs="{'invisible': ['|',('ordertype', 'not in', ['1','2']),('isattachment','!=','1')],'required':['|',('ordertype', 'not in', ['1','2']),('ordertype', '=', True)]}">-->
+                        <!--attrs="{'invisible': [('ordertype', 'not in', ['1','2']),('isattachment','!=','1')],'required':[('ordertype', 'not in', ['1','2']),('ordertype', '=', True)]}">-->
                         <!--<field name="attachment_number" widget="statinfo" string="附件上传"/>-->
                         <!--</button>-->
                         <h1>
@@ -311,41 +312,58 @@
         <!--</record>-->
 
         <!-- 批量代批 -->
-        <act_window id="action_oa_batch_substitution"
-                    name="批量代批"
-                    src_model="oa"
-                    res_model="oa.batch.substitution"
-                    view_type="tree" view_mode="form"
-                    target="new"/>
+        <!--<act_window id="action_oa_batch_substitution"-->
+        <!--name="批量代批"-->
+        <!--src_model="oa"-->
+        <!--res_model="oa.batch.substitution"-->
+        <!--view_mode="form"-->
+        <!--target="new"/>-->
 
-        <record model="ir.actions.act_window" id="action_oa_batch_substitution">
-            <field name="name">批量代批</field>
-            <field name="src_model">oa</field>
-            <field name="res_model">oa.batch.substitution</field>
-            <field name="view_mode">form</field>
-            <field name="view_type">form</field>
-            <field name="target">new</field>
-        </record>
+        <!--<record id="oa_batch_substitution_form" model="ir.ui.view">-->
+        <!--<field name='name'>批量代批表单</field>-->
+        <!--<field name='model'>oa.batch.substitution</field>-->
+        <!--<field name='arch' type='xml'>-->
+        <!--<form string='批量代批'>-->
+        <!--<sheet>-->
+        <!--<group>-->
+        <!--<group>-->
+        <!--<field name="substitution_user"/>-->
+        <!--</group>-->
+        <!--</group>-->
+        <!--</sheet>-->
+        <!--<footer>-->
+        <!--<button name='batch_substitution' string='确定' class='oe_highlight' type='object'/>-->
+        <!--<button special="cancel" string="取消" type="object" class="btn btn-default oe_inline"/>-->
+        <!--</footer>-->
+        <!--</form>-->
+        <!--</field>-->
+        <!--</record>-->
+        <!--<record model="ir.actions.act_window" id="action_oa_batch_substitution">-->
+        <!--<field name="name">批量代批</field>-->
+        <!--<field name="src_model">oa</field>-->
+        <!--<field name="res_model">oa.batch.substitution</field>-->
+        <!--<field name="view_mode">form</field>-->
+        <!--<field name="view_id" ref="oa_batch_substitution_form"/>-->
+        <!--<field name="target">new</field>-->
+        <!--</record>-->
 
-        <record id="oa_batch_substitution_form" model="ir.ui.view">
-            <field name='name'>批量代批表单</field>
-            <field name='model'>oa.batch.substitution</field>
-            <field name='arch' type='xml'>
-                <form string='批量代批'>
-                    <sheet>
-                        <group>
-                            <group>
-                                <field name="substitution_user"/>
-                            </group>
-                        </group>
-                    </sheet>
-                    <footer>
-                        <button name='batch_substitution' string='确定' class='oe_highlight' type='object'/>
-                        <button special="cancel" string="取消" type="object" class="btn btn-default oe_inline"/>
-                    </footer>
-                </form>
-            </field>
-        </record>
+
+        <!--<record id="oa_form2" model="ir.ui.view">-->
+            <!--<field name="name">基础表单</field>-->
+            <!--<field name="model">oa</field>-->
+            <!--<field name="inherit_id" ref="oa_form"/>-->
+            <!--<field name="arch" type="xml">-->
+                <!--<xpath expr="//sheet" position="after">-->
+                    <!--<button type="action" class="pull-right btn-primary" name="%(action_window_oa_flow_context)d"-->
+                            <!--style="position: absolute; margin-right: 0px; background-color: #875a7b; right: 16px;"-->
+                            <!--string="流程单 ：" icon="fa-flag">-->
+                        <!--<field name="oa_applicant" readonly="1"-->
+                               <!--style="padding-right: 10px;padding-left: 5px;font-size: initial;"/>-->
+                        <!--<field name="oa_state" readonly="1"/>-->
+                    <!--</button>-->
+                <!--</xpath>-->
+            <!--</field>-->
+        <!--</record>-->
 
         <!-- Top menu item -->
         <menuitem id="menu_root"
@@ -355,15 +373,15 @@
                   sequence="26" groups="flowmanager.group_flowmanager_user"/>
         <!-- menu categories -->
         <menuitem name="审批流程单" id="menu_oa" parent="menu_root" sequence="1"/>
-        <menuitem name="工作流程单" id="menu_oa_work" parent="menu_root" sequence="3"/>
+        <!--<menuitem name="工作流程单" id="menu_oa_work" parent="menu_root" sequence="3"/>-->
         <menuitem name="配置" id="menu_setting" parent="menu_root"
                   groups="flowmanager.group_flowmanager_manager" sequence="2"/>
-        <menuitem name="表单" id="menu_oa_receipt" parent="menu_root"/>
-        <menuitem name="报告" id="menu_oa_report" parent="menu_root"/>
+        <!--<menuitem name="表单" id="menu_oa_receipt" parent="menu_root"/>-->
+        <!--<menuitem name="报告" id="menu_oa_report" parent="menu_root"/>-->
         <menuitem name="员工信息" id="menu_setting_employee_info" parent="menu_setting"
                   action="hr.open_view_employee_list_my" sequence="2"/>
         <menuitem name="部门信息" id="menu_setting_department_info" parent="menu_setting"
-                  action="hr.open_module_tree_department" sequence="3"/>
+                  action="hr.hr_department_tree_action" sequence="3"/>
         <menuitem name="岗位信息" id="menu_setting_job_info" parent="menu_setting"
                   action="hr.action_hr_job" sequence="4"/>
         <!--<menuitem name="参照序列" id="menu_setting_sequence" parent="menu_setting" action="base.ir_sequence_form"-->

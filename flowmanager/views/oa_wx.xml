@@ -1,0 +1,127 @@
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="oa_wx_list">
+            <field name="name">微信公众号配置</field>
+            <field name="model">oa.wx</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="appid"/>
+                    <field name="secret"/>
+                    <field name="access_token"/>
+                    <field name="expires_in"/>
+                    <field name="wx_state"/>
+                    <field name="cron_order"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="oa_wx_form">
+            <field name="name">微信公众号配置</field>
+            <field name="model">oa.wx</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="get_wx_access_token" string="初始化Access Token" type="object" class="oe_highlight"
+                                attrs="{'invisible':[('cron_order','!=',False)]}"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="appid"/>
+                                <field name="secret"/>
+                                <field name="baseurl"/>
+                            </group>
+                            <group>
+                                <field name="access_token"/>
+                                <field name="expires_in"/>
+                                <field name="wx_state"/>
+                                <field name="cron_order"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_window_oa_wx">
+            <field name="name">微信公众号配置</field>
+            <field name="res_model">oa.wx</field>
+            <field name="view_mode">form,tree</field>
+            <field name="view_id" ref="oa_wx_list"></field>
+        </record>
+        <menuitem name="微信公众号配置" id="menu_oa_wx" parent="menu_setting" sequence="10"
+                  action="action_window_oa_wx"/>
+
+
+        <record model="ir.ui.view" id="msg_templete_list">
+            <field name="name">消息记录</field>
+            <field name="model">msg.templete</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="touser"/>
+                    <field name="template_id"/>
+                    <field name="url"/>
+                    <field name="msg"/>
+                    <field name="oa_order"/>
+                    <field name="order"/>
+                    <field name="approval"/>
+                    <field name="date"/>
+                    <field name="msg_state"/>
+                    <button name="sned_message" string="消息发送" type="object" class="oe_highlight"
+                            attrs="{'invisible':[('msg_state','==','请求成功')]}"/>
+                </tree>
+            </field>
+        </record>
+        <record model="ir.ui.view" id="msg_templete_form">
+            <field name="name">消息记录</field>
+            <field name="model">msg.templete</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="sned_message" string="消息发送" type="object" class="oe_highlight"
+                                attrs="{'invisible':[('msg_state','==','请求成功')]}"/>
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="touser"/>
+                                <field name="template_id"/>
+                                <field name="url"/>
+                                <field name="msg"/>
+                                <field name="oa_order"/>
+                            </group>
+                            <group>
+                                <field name="order"/>
+                                <field name="approval"/>
+                                <field name="date"/>
+                                <field name="msg_state"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_window_msg_templete">
+            <field name="name">消息记录</field>
+            <field name="res_model">msg.templete</field>
+            <field name="view_mode">form,tree</field>
+            <field name="view_id" ref="msg_templete_list"></field>
+        </record>
+        <menuitem name="消息记录" id="menu_msg_templete" parent="menu_setting" sequence="11"
+                  action="action_window_msg_templete"/>
+
+        <record id="inherit_view_employee_form" model="ir.ui.view">
+            <field name="name">inherit.hr.employee.form</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='coach_id']" position="after">
+                    <field name="wx_aaid" readonly="1" force_save="1" invisible="1"/>
+                    <field name="qr_image" widget="image" style="width: 200px;"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
