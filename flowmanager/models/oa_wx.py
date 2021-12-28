@@ -21,7 +21,7 @@ class oa_wx(models.Model):
     expires_in = fields.Char(string="定时时长")
     wx_state = fields.Boolean(string="启用", default=False)
     cron_order = fields.Many2one('ir.cron', string="相关任务")
-    baseurl = fields.Char(string="对外域名")
+    baseurl = fields.Char(string="对外域名", help="用于微信端消息连接的域名")
 
     def get_wx_access_token(self):
         '''获取微信公众号Access token'''

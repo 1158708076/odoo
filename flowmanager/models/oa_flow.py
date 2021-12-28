@@ -24,7 +24,7 @@ class oa_flow(models.Model):
 
     is_workflow = fields.Boolean(string='是否加入工作流', default=False, help='默认为审批流，如果加入工作流，流程定义会改为审批工作流程的流程定义')
 
-    wx_templete = fields.Char(string="微信消息模板")
+    wx_templete = fields.Char(string="微信消息模板",help="模板字段定义，msg:提示信息；\n oa:审批单据；\n order:业务单据；\n approval:下级审批人；\n date:操作日期；")
 
     @api.model
     def create(self, vals):
