@@ -6,13 +6,16 @@
        暂时没有描述""",
     'description': """
     流程管理，实现基础表单和流程分离
+    支持对接微信公众号
+    支持微信接收审批消息和手机端查看单据
+    搭载最新工作流引擎实现审批流和工作流的混合运行，实现流程的精准业务化
     """,
-    'price': 200,
+    'price': 707,
     'currency': 'EUR',
     'author': "一叶障目",
     'website': "http://www.yourcompany.com",
     'category': 'OA',
-    'version': '11.0.1',
+    'version': '14.0.1',
     # any module necessary for this one to work correctly
     'depends': ['base', 'mail', 'hr', 'auth_signup', 'web'],
 
